@@ -29,7 +29,7 @@ class HomeController extends Controller
         // メモ一覧を取得
         $memos = Memo::where('user_id', $user['id'])->where('status', 1)->orderBy('updated_at', 'DESC')->get();
         // dd($memos);
-        return view('home', compact('user','memos'));
+        return view('create', compact('user','memos'));
     }
 
     public function create()
@@ -47,14 +47,14 @@ class HomeController extends Controller
         // MEMOモデルにDBへ保存する命令を出す
 
         // 同じタグがあるか確認
-        // $exist_tag = Tag::where('name', $data['tag'])->where('user_id', $data['user_id'])->first();
-        // if( empty($exist_tag['id']) ){
-        //     //先にタグをインサート
+        $exist_tag = Tag::where('name', $data['tag'])->where('user_id', $data['user_id'])->first();
+        // dd($is_exist);
+        if( empty($exist_tag['id']) ) {
             $tag_id = Tag::insertGetId(['name' => $data['tag'], 'user_id' => $data['user_id']]);
-            // dd($tag_id);
-        // }else{
-        //     $tag_id = $exist_tag['id'];
-        // }
+        }else{
+            $tag_id = $exist_tag['id'];
+        }
+        //     //先にタグをインサート
         //タグのIDが判明する
         // タグIDをmemosテーブルに入れてあげる
         $memo_id = Memo::insertGetId([
@@ -86,5 +86,13 @@ class HomeController extends Controller
     Memo::where('id', $id)->update(['content' => $inputs['content'], 'tag_id' => $inputs['tag_id']]);
     return redirect()->route('home');
     }
+
+    public function delete(Request $request, $id) {
+        $inputs = $request->all();
+        // dd($inputs);
+        Memo::where('id', $id)->update(['status' => 2 ]);
+
+        return redirect()->route('home')-> with('success', 'メモの柵署が完了しました！');
+        }
 
 }
